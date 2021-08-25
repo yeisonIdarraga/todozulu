@@ -8,8 +8,8 @@ namespace todozulu.Common.Responses
     {
         public bool IsSuccess { get; set; }
 
-        public string TaskDescription { get; set; }
+        public string Message { get; set; }
 
-        public bool IsCompleted { get; set; }
+        public bool Result { get; set; }
     }
 }

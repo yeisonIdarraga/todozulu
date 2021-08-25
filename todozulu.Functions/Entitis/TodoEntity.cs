@@ -5,7 +5,7 @@ using System.Text;
 
 namespace todozulu.Functions.Entitis
 {
-    public class TodoEntity : TableEntity;
+    public class TodoEntity : TableEntity
         { 
 
          public DateTime CreatedTime { get; set; }
@@ -14,7 +14,9 @@ namespace todozulu.Functions.Entitis
 
     public bool IsCompleted { get; set; }
 
-
-
+        public static implicit operator bool(TodoEntity v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

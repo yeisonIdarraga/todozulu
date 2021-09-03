@@ -21,6 +21,10 @@ namespace todozulu.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "todo")] HttpRequest req,
             [Table("todo", Connection = "Azure.WebJobs.Extensions.Storage")] CloudTable todoTable,
             ILogger log)
+
+
+
+
         {
 
 
@@ -74,5 +78,57 @@ namespace todozulu.Functions
 
         }
 
-    }
-}
+        [FunctionName(nameof(UpdateTodo))]
+        public static async Task<IActionResult> UpdateTodo(
+           [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "todo/{id}")] HttpRequest req,
+           [Table("todo", Connection = "Azure.WebJobs.Extensions.Storage")] CloudTable todoTable,
+           string id,
+           ILogger log)
+
+        { 
+            log.LogInformation($"update for :{id}, received");
+              string name = req.Query["name"];
+              string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+            Todo todo = JsonConvert.DeserializeObject<Todo>(requestBody);
+            //validate id
+            TableOperation findOperation = TableOperation.Retrieve<TodoEntity>( " TODO", id);
+            TableResult findResult = await todoTable.ExecuteAsync(findOperation);
+            if (findResult.Result == null)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+                    IsSuccess = false,
+                    Message = "Todo not found"
+                }
+                    );
+            }
+                TodoEntity todoEntity = (TodoEntity)findResult.Result;
+                todoEntity.IsCompleted = todo.IsCompleted;
+                if (!string.IsNullOrEmpty(todo.TaskDescription))
+                {
+                    todoEntity.TaskDescription = todo.TaskDescription;
+                }
+
+
+
+                    TableOperation addOperation = TableOperation.Replace(todoEntity);
+                    await todoTable.ExecuteAsync(addOperation);
+
+                    string message = $"Todo: {id}, update in table";
+                    log.LogInformation(message);
+
+                    return new OkObjectResult(new Response
+                    {
+
+                        IsSuccess = true,
+                        Message = message,
+                        Result = todoEntity
+
+                    });
+
+                }
+            }
+        }
+
+
